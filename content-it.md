@@ -32,10 +32,10 @@ hardware:
 Nei precedenti esempi abbiamo discusso [come utilizzare l'Opta per leggere da
 un contatore di energia Finder serie
 7M](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content-it.md)
-utilizzando il protocollo Modbus. In questo tutorial, impareremo come
-implementare il multithreading su Opta per leggere contemporaneamente il Finder
-serie 7M e inviare i valori ottenuti a un server HTTP remoto tramite Ethernet.
-In particolare, un thread continuerà a leggere un contatore certificato MID dal
+tramite il protocollo Modbus. In questo tutorial, impareremo a implementare il
+multithreading su Opta per leggere contemporaneamente il Finder serie 7M e
+inviare i valori ottenuti a un server HTTP remoto tramite Ethernet. In
+particolare, un thread continuerà a leggere un contatore certificato MID dal
 Finder serie 7M, mentre il `loop()` trasmetterà il valore letto ogni cinque
 secondi.
 
@@ -114,10 +114,10 @@ articolo](https://support.arduino.cc/hc/en-us/articles/5145457742236-Add-librari
 
 Come [nel tutorial
 precedente](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content.md#connecting-the-opta-and-finder-7m),
-dovremo alimentare l'Opta con l'alimentazione da 12VDC/1A e collegarlo al 7M
-tramite una connessione seriale RS-485. Inoltre, per questo tutorial,
-connetteremo l'Opta al computer che esegue il server HTTP utilizzando un cavo
-Ethernet RJ45. Per completare questi passaggi, consulta il diagramma seguente:
+dovremo alimentare l'Opta con l'alimentatore da 12VDC/1A e collegarlo al 7M
+tramite una connessione seriale RS-485. Inoltre, per questo tutorial
+connetteremo l'Opta al computer che ospita il server HTTP utilizzando un cavo
+Ethernet RJ45. Per completare questi passaggi, consulta il diagramma in figura:
 
 ![Connecting Opta and Finder 7M](assets/connection.svg)
 
@@ -136,7 +136,7 @@ tramite NFC.
 
 Lo scopo del seguente esempio è implementare il multithreading Opta per leggere
 un Finder serie 7M e inviare i valori ottenuti a un server HTTP remoto tramite
-Ethernet in due thread separati.
+Ethernet, in due thread separati.
 
 Il codice completo dell'esempio è disponibile
 [qui](assets/OptaMultithreadingExample.zip): dopo aver estratto i file, lo
@@ -147,7 +147,7 @@ sketch può essere compilato e caricato sull'Opta.
 Nel metodo `setup()` effettueremo le seguenti operazioni:
 
 * Inizializzeremo la connessione Modbus verso il contatore di energia Finder
-  serie 7M utilizzando la funzione integrata dalla libreria `Finder7M`.
+  serie 7M, utilizzando la funzione integrata dalla libreria `Finder7M`.
 * Assegneremo un indirizzo IP statico all'Opta in modo che appartenga alla
   stessa rete IP del server HTTP (es. la stessa LAN del computer che ospita
   l'`http-echo-server`). Potrebbe essere necessario modificare il codice per
@@ -156,8 +156,8 @@ Nel metodo `setup()` effettueremo le seguenti operazioni:
 * Configureremo i parametri del server HTTP, in particolare indirizzo IP e
   porta. Potrebbe essere necessario modificare entrambi i valori a seconda
   della configurazione del proprio server.
-* Avvieremo un thread separato che eseguire una funzione in loop parallelamente
-  al `loop()` principale, che è invece il thread principale.
+* Avvieremo un thread separato che esegua una funzione in loop, parallelamente
+  al `loop()` che è invece il thread principale.
 
 ```cpp
 #include <Finder7M.h>
@@ -218,9 +218,9 @@ void setup()
 }
 ```
 
-Si noti che questo frammento di codice crea anche una variabile volatile che il
-secondo thread aggiornerà, in modo che il `loop()` possa trasmettere il suo
-valore come vedremo in seguito. Alla fine del metodo `setup()`, leggiamo anche
+Si noti che questo pezzo di codice crea anche una variabile volatile che il
+secondo thread aggiornerà, in modo che il `loop()` possa trasmetterne il
+valore, come vedremo in seguito. Alla fine del metodo `setup()`, leggiamo anche
 lo stopwatch utilizzando la funzione `millis()` e ne memorizziamo il valore
 corrente in una variabile.
 
@@ -259,7 +259,7 @@ variabile volatile e infine stampa sul monitor seriale la mantissa e
 l'esponente della misura. In seguito il thread ripete la stessa operazione,
 oppure se il tempo trascorso dalla lettura precedente è inferiore a 0.3s, entra
 in stato sleep: si noti che questa implementazione utilizza lo stopwatch per
-controllare il flusso di esecuzione del codice, senza utilizzare funzione
+controllare il flusso di esecuzione del codice, senza utilizzare la funzione
 `delay()`.
 
 #### Invio delle misure al server HTTP dalla funzione `loop()`
@@ -279,12 +279,12 @@ void loop()
 ```
 
 Questo loop viene eseguito ogni 0.5s e utilizza lo stopwatch per verificare che
-siano trascorsi 5 secondi dall'ultima modifica alla variabile `chrono`,
-inizialmente impostata al termine della funzione `setup()` e in seguito
-aggiornata ogni volta che si invia una misura al server HTTP. Si noti che,
-anche in questo caso per controllare il flusso dell'esecuzione ci affidiamo
-allo stopwatch, mentre il delay viene introdotto solo per comodità, al fine di
-limitare il numero di volte in cui il `loop()` verifica che siano passati 5s.
+siano trascorsi 5s dall'ultima modifica alla variabile `chrono`, inizialmente
+impostata al termine della funzione `setup()` e in seguito aggiornata ogni
+volta che si invia una misura al server HTTP. Si noti che, anche in questo caso
+per controllare il flusso dell'esecuzione ci affidiamo allo stopwatch, mentre
+il delay viene introdotto solo per comodità, al fine di limitare il numero di
+volte in cui il `loop()` verifica che siano passati 5s.
 
 Il codice che invia i dati al server HTTP è molto semplice:
 

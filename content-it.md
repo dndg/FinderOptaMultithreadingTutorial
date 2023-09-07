@@ -1,6 +1,6 @@
 ---
-title: 'Multithreading con Opta e Finder serie 7M'
-description: "Imparare come eseguire più thread sull'Opta per leggere
+title: 'Multithreading con Finder Opta e Finder serie 7M'
+description: "Imparare come eseguire più thread su Finder Opta per leggere
               contemporaneamente da un Finder 7M e inviare la misura a un server
               HTTP remoto."
 author: 'Fabrizio Trovato'
@@ -29,19 +29,19 @@ hardware:
 
 ## Panoramica
 
-Nei precedenti esempi abbiamo discusso [come utilizzare l'Opta per leggere da
-un contatore di energia Finder serie
+Nei precedenti esempi abbiamo discusso [come utilizzare il Finder Opta per
+leggere da un contatore di energia Finder serie
 7M](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content-it.md)
 tramite il protocollo Modbus. In questo tutorial, impareremo a implementare il
-multithreading su Opta per leggere contemporaneamente il Finder serie 7M e
-inviare i valori ottenuti a un server HTTP remoto tramite Ethernet. In
+multithreading su Finder Opta per leggere contemporaneamente il Finder serie 7M
+e inviare i valori ottenuti a un server HTTP remoto tramite Ethernet. In
 particolare, un thread continuerà a leggere un contatore certificato MID dal
 Finder serie 7M, mentre il `loop()` trasmetterà il valore letto ogni cinque
 secondi.
 
 ## Obiettivi
 
-* Imparare a implementare il multithreading su Opta.
+* Imparare a implementare il multithreading su Finder Opta.
 * Imparare a leggere contemporaneamente da un contatore di energia Finder serie
   7M e inviare periodicamente la misura a un server HTTP remoto all'interno
   dello stesso sketch.
@@ -50,7 +50,7 @@ secondi.
 
 ### Requisiti hardware
 
-* PLC Opta con supporto RS-485 (x1).
+* PLC Finder Opta con supporto RS-485 (x1).
 * Contatore di energia Finder serie 7M (x1).
 * Alimentatore DIN rail 12VDC/1A (x1).
 * Cavo USB-C® (x1).
@@ -71,19 +71,19 @@ Editor](https://create.arduino.cc/editor).
   GitHub](https://github.com/dndg/Finder7M) direttamente nella directory
   contenente tutte le altre librerie.
 * [Codice di esempio](assets/OptaMultithreadingExample.zip).
-* Un server HTTP per stampare i dati ricevuti dall'Opta: per semplicità è
+* Un server HTTP per stampare i dati ricevuti dal Finder Opta: per semplicità è
   consigliato [http-echo-server](https://github.com/watson/http-echo-server),
   che può essere facilmente configurato su un computer con pochi comandi.
 
 ## Finder Opta e Multithreading
 
-Essendo una board basata su Mbed OS, Opta può sfruttare la classe
+Essendo una board basata su Mbed OS, Finder Opta può sfruttare la classe
 [`Thread`](https://os.mbed.com/docs/mbed-os/v6.16/apis/thread.html) per creare
 e controllare task paralleli. Ciò ci consente di scrivere loop aggiuntivi che
 possono essere eseguiti in parallelo alla funzione `loop()`, che è invece il
 thread principale.
 
-Inoltre, Opta può sfruttare la funzione `millis()` per accedere al suo
+Inoltre, Finder Opta può sfruttare la funzione `millis()` per accedere al suo
 stopwatch, ovvero il numero di millisecondi trascorsi da quando la board
 Arduino ha iniziato l'esecuzione dello sketch: utilizzando questo cronometro
 possiamo orchestrare l'esecuzione dei diversi thread nel nostro programma.
@@ -93,11 +93,11 @@ possiamo orchestrare l'esecuzione dei diversi thread nel nostro programma.
 ### Configurazione dell'Arduino IDE
 
 Per seguire questo tutorial, sarà necessaria [l'ultima versione dell'Arduino
-IDE](https://www.arduino.cc/en/software). Se è la prima volta che configuri
-l'Opta, dai un'occhiata al tutorial [Getting Started with
+IDE](https://www.arduino.cc/en/software). Se è la prima volta che configuri il
+Finder Opta, dai un'occhiata al tutorial [Getting Started with
 Opta](/tutorials/opta/getting-started).
 
-Assicurati di installare la versione l'ultima versione delle librerie
+Assicurati di installare l'ultima versione delle librerie
 [ArduinoHttpClient](https://www.arduino.cc/reference/en/libraries/arduinohttpclient/),
 [ArduinoModbus](https://www.arduino.cc/reference/en/libraries/arduinomodbus/) e
 [ArduinoRS485](https://www.arduino.cc/reference/en/libraries/arduinors485/),
@@ -110,14 +110,15 @@ _libraries_ all'interno del tuo sketchbook. Per ulteriori dettagli su come
 installare manualmente le librerie, consulta [questo
 articolo](https://support.arduino.cc/hc/en-us/articles/5145457742236-Add-libraries-to-Arduino-IDE).
 
-### Connessione tra Opta e Finder serie 7M
+### Connessione tra Finder Opta e Finder serie 7M
 
 Come [nel tutorial
-precedente](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content.md#connecting-the-opta-and-finder-7m),
-dovremo alimentare l'Opta con l'alimentatore da 12VDC/1A e collegarlo al 7M
-tramite una connessione seriale RS-485. Inoltre, per questo tutorial
-connetteremo l'Opta al computer che ospita il server HTTP utilizzando un cavo
-Ethernet RJ45. Per completare questi passaggi, consulta il diagramma in figura:
+precedente](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content-it.md#connessione-tra-finder-opta-e-finder-serie-7m),
+dovremo alimentare il Finder Opta con l'alimentatore da 12VDC/1A e collegarlo
+al 7M tramite una connessione seriale RS-485. Inoltre, per questo tutorial
+connetteremo il Finder Opta al computer che ospita il server HTTP utilizzando
+un cavo Ethernet RJ45. Per completare questi passaggi, consulta il diagramma in
+figura:
 
 ![Connecting Opta and Finder 7M](assets/connection.svg)
 
@@ -128,19 +129,20 @@ parametri di comunicazione del 7M:
 * Baudrate `38400`.
 * Configurazione seriale `8-N-1`.
 
-Ciò può essere fatto con facilità utilizzando [l'applicazione
-Toolbox](https://play.google.com/store/apps/details?id=com.findernet.ToolboxNFC)
-tramite NFC.
+Ciò può essere fatto con facilità con il tuo smartphone utilizzando
+[l'applicazione Finder
+Toolbox](https://www.findernet.com/it/italia/supporto/software-e-app/) tramite
+NFC.
 
 ### Panoramica del codice
 
-Lo scopo del seguente esempio è implementare il multithreading Opta per leggere
-un Finder serie 7M e inviare i valori ottenuti a un server HTTP remoto tramite
-Ethernet, in due thread separati.
+Lo scopo del seguente esempio è implementare il multithreading su Finder Opta
+per leggere un Finder serie 7M e inviare i valori ottenuti a un server HTTP
+remoto tramite Ethernet, in due thread separati.
 
 Il codice completo dell'esempio è disponibile
 [qui](assets/OptaMultithreadingExample.zip): dopo aver estratto i file, lo
-sketch può essere compilato e caricato sull'Opta.
+sketch può essere compilato e caricato sul Finder Opta.
 
 #### Setup del programma
 
@@ -148,11 +150,11 @@ Nel metodo `setup()` effettueremo le seguenti operazioni:
 
 * Inizializzeremo la connessione Modbus verso il contatore di energia Finder
   serie 7M, utilizzando la funzione integrata dalla libreria `Finder7M`.
-* Assegneremo un indirizzo IP statico all'Opta in modo che appartenga alla
-  stessa rete IP del server HTTP (es. la stessa LAN del computer che ospita
-  l'`http-echo-server`). Potrebbe essere necessario modificare il codice per
-  impostare un indirizzo IP differente da quello di default, a seconda della
-  configurazione della rete.
+* Assegneremo un indirizzo IP statico al Finder Opta in modo che appartenga
+  alla stessa rete IP del server HTTP (es. la stessa LAN del computer che
+  ospita l'`http-echo-server`). Potrebbe essere necessario modificare il codice
+  per impostare un indirizzo IP differente da quello di default, a seconda
+  della configurazione della rete.
 * Configureremo i parametri del server HTTP, in particolare indirizzo IP e
   porta. Potrebbe essere necessario modificare entrambi i valori a seconda
   della configurazione del proprio server.
@@ -186,7 +188,7 @@ OptaBoardInfo *boardInfo();
 
 IPAddress ip(192, 168, 10, 25); // Static IP address assigned to the Opta.
 EthernetClient ethernetClient;
-HttpClient httpClient = HttpClient(ethernetClient, "192.168.10.1", 64738); // IP address and port of the netcat server.
+HttpClient httpClient = HttpClient(ethernetClient, "192.168.10.1", 64738); // IP address and port of the HTTP server.
 
 void setup()
 {
@@ -218,11 +220,11 @@ void setup()
 }
 ```
 
-Si noti che questo pezzo di codice crea anche una variabile volatile che il
-secondo thread aggiornerà, in modo che il `loop()` possa trasmetterne il
-valore, come vedremo in seguito. Alla fine del metodo `setup()`, leggiamo anche
-lo stopwatch utilizzando la funzione `millis()` e ne memorizziamo il valore
-corrente in una variabile.
+Si noti che questo codice dichiara una variabile volatile che verrà aggiornata
+dal secondo thread, in modo che il `loop()` possa trasmetterne il valore, come
+vedremo in seguito. Alla fine del metodo `setup()`, leggiamo anche lo stopwatch
+utilizzando la funzione `millis()` e ne memorizziamo il valore corrente in una
+variabile.
 
 #### Lettura del Finder serie 7M all'interno di un thread
 
@@ -279,14 +281,14 @@ void loop()
 ```
 
 Questo loop viene eseguito ogni 0.5s e utilizza lo stopwatch per verificare che
-siano trascorsi 5s dall'ultima modifica alla variabile `chrono`, inizialmente
-impostata al termine della funzione `setup()` e in seguito aggiornata ogni
-volta che si invia una misura al server HTTP. Si noti che, anche in questo caso
-per controllare il flusso dell'esecuzione ci affidiamo allo stopwatch, mentre
-il delay viene introdotto solo per comodità, al fine di limitare il numero di
+siano trascorsi 5s dall'ultima modifica alla variabile `chrono`, inizializzata
+al termine della funzione `setup()` e in seguito aggiornata ogni volta che si
+invia una misura al server HTTP. Si noti che, anche in questo caso per
+controllare il flusso dell'esecuzione ci affidiamo allo stopwatch, mentre il
+delay viene introdotto solo per comodità, al fine di limitare il numero di
 volte in cui il `loop()` verifica che siano passati 5s.
 
-Il codice che invia i dati al server HTTP è molto semplice:
+Il codice che invia i dati al server HTTP è il seguente:
 
 ```cpp
 String contentType = "application/x-www-form-urlencoded";
@@ -301,14 +303,13 @@ Serial.println(response);
 ```
 
 Il server HTTP riceverà una richiesta POST di tipo `x-www-form-urlencoded`,
-contenente il valore in formato float dell'energia attiva importata, letta dal
-thread `MIDsThread` dal contatore certificato MID del Finder serie 7M, oltre al
-valore del cronometro al momento in cui è stata inviata la richiesta.
+contenente il valore in formato float dell'energia attiva importata e il valore
+del cronometro al momento in cui è stata inviata la richiesta.
 
 ## Conclusioni
 
-Questo tutorial mostra come implementare due thread su Opta in modo che
-eseguano compiti separati, senza fare affidamento sui delay ma utilizzando
-invece lo stopwatch della board. Inoltre, il tutorial mostra come utilizzare la
-libreria `Finder7M` per leggere facilmente i contatori certificati MID da un
-Finder 7M e inviare la misura ottenuta a un server HTTP tramite Ethernet.
+Questo tutorial mostra come utilizzare due thread su Finder Opta in modo che
+eseguano compiti separati, utilizzando lo stopwatch della board. Inoltre, il
+tutorial mostra come utilizzare la libreria `Finder7M` per leggere facilmente i
+contatori certificati MID da un Finder 7M e inviare la misura ottenuta a un
+server HTTP tramite Ethernet.

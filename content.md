@@ -1,6 +1,6 @@
 ---
-title: 'Multithreading with Opta and Finder 7M'
-description: "Learn how to run multiple threads on the Opta to simultaneously
+title: 'Multithreading with Finder Opta and Finder 7M'
+description: "Learn how to run multiple threads on the Finder Opta to simultaneously
               read from a Finder 7M and send the measure to a remote HTTP server."
 author: 'Fabrizio Trovato'
 libraries:
@@ -28,18 +28,18 @@ hardware:
 
 ## Overview
 
-In previous examples we discussed [how to use the Opta to read from a Finder 7M
-energy
+In previous examples we discussed [how to use the Finder Opta to read from a
+Finder 7M energy
 meter](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content.md) using
 the Modbus protocol. In this tutorial, we are going to learn how to implement
-multithreading on the Opta to simultaneously read the Finder 7M and send the
-obtained values to a remote HTTP server via Ethernet. In particular, one thread
-will continuously read a MID certified counter from the Finder 7M, while the
-`loop()` will transmit the read value every five seconds.
+multithreading on the Finder Opta to simultaneously read the Finder 7M and send
+the obtained values to a remote HTTP server via Ethernet. In particular, one
+thread will continuously read a MID certified counter from the Finder 7M, while
+the `loop()` will transmit the read value every five seconds.
 
 ## Goals
 
-* Learn how to implement multithreading on the Opta.
+* Learn how to implement multithreading on the Finder Opta.
 * Learn how to simultaneously read from a Finder 7M energy meter and
   periodically send the measure to a remote HTTP server within the same sketch.
 
@@ -47,7 +47,7 @@ will continuously read a MID certified counter from the Finder 7M, while the
 
 ### Hardware Requirements
 
-* Opta PLC with RS-485 support (x1).
+* Finder Opta PLC with RS-485 support (x1).
 * Finder 7M energy meter (x1).
 * 12VDC/1A DIN rail power supply (x1).
 * USB-C® cable (x1).
@@ -68,20 +68,20 @@ will need to install the `Finder 7M for Finder Opta library`: you can clone it
 [from GitHub](https://github.com/dndg/Finder7M) directly into the directory
 containing all the rest of your libraries.
 * [Example code](assets/OptaTasksExample.zip).
-* An HTTP server to print the data received from the Opta: for the sake of
-  simplicity we recommend something like
+* An HTTP server to print the data received from the Finder Opta: for the sake
+  of simplicity we recommend something like
   [http-echo-server](https://github.com/watson/http-echo-server) which can be
   easily setup on a computer with a couple commands.
 
 ## Finder Opta and Multithreading
 
-Being an Mbed OS based board, the Opta can leverage the [`Thread`
+Being an Mbed OS based board, the Finder Opta can leverage the [`Thread`
 class](https://os.mbed.com/docs/mbed-os/v6.16/apis/thread.html) to create and
 control parallel tasks. This allows us to write additional loops that can run
 concurrently next to the `loop()` function, which is instead the main thread.
 
-Additionally, the Opta can leverage the `millis()` function to access its
-stopwatch, meaning the number of milliseconds that passed since the Arduino
+Additionally, the Finder Opta can leverage the `millis()` function to access
+its stopwatch, meaning the number of milliseconds that passed since the Arduino
 board began running the current sketch: by means of this stopwatch we can
 orchestrate the execution of the different threads in our program.
 
@@ -91,7 +91,7 @@ orchestrate the execution of the different threads in our program.
 
 This tutorial will need [the latest version of the Arduino
 IDE](https://www.arduino.cc/en/software). If it is your first time setting up
-the Opta, check out the [getting started
+the Finder Opta, check out the [getting started
 tutorial](/tutorials/opta/getting-started).
 
 Make sure you install the latest version of the
@@ -108,14 +108,14 @@ libraries folder inside your sketchbook. For further details on how to manually
 install libraries refer to [this
 article](https://support.arduino.cc/hc/en-us/articles/5145457742236-Add-libraries-to-Arduino-IDE).
 
-### Connecting the Opta and Finder 7M
+### Connecting the Finder Opta and Finder 7M
 
 Just like [in the previous
-tutorial](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content.md#connecting-the-opta-and-finder-7m)
-we will need to power the Opta with the 12VDC/1A supply and connect it to the
-7M via RS-485 serial connection. Additionally, for this tutorial we will
-connect the Opta to the computer running the HTTP server using the Ethernet
-RJ45 cable. To complete these steps refer to the following diagram:
+tutorial](https://github.com/dndg/FinderOpta7MTutorial/blob/main/content.md#connecting-the-finder-opta-and-finder-7m)
+we will need to power the Finder Opta with the 12VDC/1A supply and connect it
+to the 7M via RS-485 serial connection. Additionally, for this tutorial we will
+connect the Finder Opta to the computer running the HTTP server using the
+Ethernet RJ45 cable. To complete these steps refer to the following diagram:
 
 ![Connecting Opta and Finder 7M](assets/connection.svg)
 
@@ -126,19 +126,19 @@ for the 7M to:
 * Baudrate `38400`.
 * Serial configuration `8-N-1`.
 
-This can easily be done using [the Toolbox
-application](https://play.google.com/store/apps/details?id=com.findernet.ToolboxNFC)
+This can easily be done with your smartphone using [the Finder Toolbox
+application](https://www.findernet.com/en/worldwide/support/software-and-apps/)
 via NFC.
 
 ### Code Overview
 
-The goal of the following example is to implement multithreading on the Opta to
-simultaneously read the Finder 7M and send the obtained values to a remote HTTP
-server via Ethernet.
+The goal of the following example is to implement multithreading on the Finder
+Opta to simultaneously read the Finder 7M and send the obtained values to a
+remote HTTP server via Ethernet.
 
 The full code of the example is available
 [here](assets/OptaMultithreadingExample.zip): after extracting the files the
-sketch can be compiled and uploaded to the Opta.
+sketch can be compiled and uploaded to the Finder Opta.
 
 #### Setting up the program
 
@@ -146,10 +146,10 @@ In the `setup()` we are going to:
 
 * Initialize the Modbus connection towards the Finder 7M energy meter using the
   built-in function from the `Finder7M` library.
-* Assign a static IP address to the Opta so that it belongs to the same IP
-  network as your HTTP server (eg. it is on the same LAN as your computer which
-  hosts the `http-echo-server`). It might be necessary to change the code to
-  set a different IP address, depending on your network configuration.
+* Assign a static IP address to the Finder Opta so that it belongs to the same
+  IP network as your HTTP server (eg. it is on the same LAN as your computer
+  which hosts the `http-echo-server`). It might be necessary to change the code
+  to set a different IP address, depending on your network configuration.
 * Configure the HTTP server parameters, most notably IP address and port. It
   might be necessary to edit both values, depending on your setup.
 * Start a separate thread which will run alongside the main `loop()`, executing
@@ -214,11 +214,11 @@ void setup()
 }
 ```
 
-Notice how this piece of code also creates a volatile variable that the second
-thread will update on behalf of the main `loop()`, which will instead transmit
-its value as we will see later. Finally, at the end of the `setup()` we also
-read the stopwatch using the `millis()` function and we store its current value
-in a variable.
+Note how this code declares a volatile variable that the second thread will
+update on behalf of the main `loop()`, which will instead transmit its value as
+we will see later. Finally, at the end of the `setup()` we also read the
+stopwatch using the `millis()` function and we store its current value in a
+variable.
 
 #### Reading from the Finder 7M in a thread
 
@@ -274,13 +274,13 @@ void loop()
 ```
 
 This loop is executed every 0.5s and it uses the stopwatch to check if 5s
-passed since the last update to the `chrono` variable, which is initially set
-to the end time of the `setup()` function and then updated whenever a measure
-is sent to the HTTP server. Notice how again to control the flow of the
-execution we rely on the stopwatch, as the delay is only introduced for
-convenience to avoid performing the time check over and over for 5s.
+passed since the last update to the `chrono` variable, which is initialized at
+the end of the `setup()` function and then updated whenever a measure is sent
+to the HTTP server. Notice how again to control the flow of the execution we
+rely on the stopwatch, as the delay is only introduced for convenience to avoid
+performing the time check over and over for 5s.
 
-The code that sends data to the HTTP server is very simple:
+The code that sends data to the HTTP server is the following:
 
 ```cpp
 String contentType = "application/x-www-form-urlencoded";
@@ -295,14 +295,13 @@ Serial.println(response);
 ```
 
 The HTTP server will receive a POST request of type `x-www-form-urlencoded`
-that contains the float value of the import active energy read by the
-`MIDsThread` thread from the MID certified counter of the Finder 7M, plus the
-value of the stopwatch when the request was sent.
+that contains the float value of the import active energy and the value of the
+stopwatch when the request was sent.
 
 ## Conclusion
 
-This tutorial demonstrates how to implement two threads on the Opta to have
-them perform separate tasks, without relying on delays but using instead the
-stopwatch of the board. Additionally, the tutorial shows how it is possible to
-use the `Finder7M` library to easily read MID certified counters from a Finder
-7M, and send the measure to an HTTP server via Ethernet.
+This tutorial illustrates how to implement two threads on the Finder Opta to
+have them perform separate tasks using the stopwatch of the board.
+Additionally, the tutorial shows how it is possible to use the `Finder7M`
+library to easily read MID certified counters from a Finder 7M, and send the
+measure to an HTTP server via Ethernet.
